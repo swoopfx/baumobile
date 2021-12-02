@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import './pages/login.dart';
 import './pages/register.dart';
 import './pages/logistics.dart';
+import './pages/wallet_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   runApp(const MyApp());
 }
 
@@ -33,13 +38,16 @@ class MyApp extends StatelessWidget {
                 headline1: TextStyle(
                   // fontFamily: "QuickSand",
                   // fontWeight: FontWeight.,
+
                   fontSize: 20,
                 ),
               ),
           cardTheme: ThemeData.light().cardTheme.copyWith(
-              color: Color.fromARGB(255, 194, 240, 213), elevation: 7.0),
+              color: Color.fromARGB(255, 194, 240, 213),
+              elevation: 7.0,
+              shape: null),
           backgroundColor: Theme.of(context).primaryColorLight),
-      home: Login(),
+      home: Wallet(),
     );
   }
 }
