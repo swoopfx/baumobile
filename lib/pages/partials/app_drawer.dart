@@ -3,6 +3,10 @@ import '../dashboard.dart';
 import 'package:provider/provider.dart';
 import '../../provider/auth.dart';
 import '../wallet_page.dart';
+import '../request_list_page.dart';
+import '../service.dart';
+
+import '../login.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({Key? key}) : super(key: key);
@@ -26,6 +30,23 @@ class AppDrawer extends StatelessWidget {
           ),
           Divider(),
           ListTile(
+            leading: Icon(Icons.delivery_dining_rounded),
+            title: Text("Active Request"),
+            onTap: () {
+              Navigator.of(context)
+                  .pushReplacementNamed(RequestListPage.routName);
+            },
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.miscellaneous_services_rounded),
+            title: Text("Service"),
+            onTap: () {
+              Navigator.of(context).pushReplacementNamed(ServicePage.routeName);
+            },
+          ),
+          Divider(),
+          ListTile(
             leading: Icon(Icons.account_balance_wallet),
             title: Text("Wallet"),
             onTap: () {
@@ -38,8 +59,10 @@ class AppDrawer extends StatelessWidget {
             title: Text("Logout"),
             onTap: () {
               // Na
-              Navigator.of(context).pop();
+
               Provider.of<Auth>(context, listen: false).logout();
+              // Navigator.of(context).pop();
+              Navigator.of(context).pushReplacementNamed(Login.routeName);
             },
           ),
         ],

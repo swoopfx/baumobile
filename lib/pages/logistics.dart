@@ -21,8 +21,9 @@ class Logisics extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(serviceName)),
       body: SafeArea(
-        child: const SingleChildScrollView(
-          child: LogisticsRequestForm(),
+        child: SingleChildScrollView(
+          child: LogisticsRequestForm(
+              serviceId: serviceId, serviceName: serviceName),
         ),
       ),
     );

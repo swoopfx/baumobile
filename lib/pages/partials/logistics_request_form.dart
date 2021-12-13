@@ -7,17 +7,18 @@ import '../../services/place_service.dart';
 import '../../provider/logistics_provider.dart';
 
 class LogisticsRequestForm extends StatefulWidget {
-  const LogisticsRequestForm({Key? key}) : super(key: key);
+  String serviceId = "";
+
+  String serviceName = "";
+  LogisticsRequestForm(
+      {Key? key, required this.serviceId, required this.serviceName})
+      : super(key: key);
 
   @override
   _LogisticsRequestFormState createState() => _LogisticsRequestFormState();
 }
 
 class _LogisticsRequestFormState extends State<LogisticsRequestForm> {
-  String serviceId = "";
-
-  String serviceName = "";
-
   final double _fieldMarginTop = 10;
 
   final double _fieldMarginBottom = 0;
@@ -69,6 +70,7 @@ class _LogisticsRequestFormState extends State<LogisticsRequestForm> {
   }
 
   void _requestLogistics() {
+    _logisticsData["service_type"] = widget.serviceId;
     final isValid = _form.currentState!.validate();
     setState(() {
       _isRequesting = true;
@@ -77,7 +79,7 @@ class _LogisticsRequestFormState extends State<LogisticsRequestForm> {
     if (isValid) {
       // process logistics request logic
       _form.currentState!.save();
-      print(_logisticsData);
+      // print(_logisticsData);
       _processModalRequest();
     } else {
       return;

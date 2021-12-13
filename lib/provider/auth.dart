@@ -102,6 +102,7 @@ class Auth with ChangeNotifier {
     _token = "";
     _userId = "";
     pref.remove(_preferenceKey);
+
     notifyListeners();
   }
 

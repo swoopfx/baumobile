@@ -14,6 +14,10 @@ import './provider/auth.dart';
 import './provider/service_type_provider.dart';
 import './provider/place_search_provider.dart';
 import './provider/logistics_provider.dart';
+import './provider/wallet_provider.dart';
+import './provider/request_list_provider.dart';
+import './pages/request_list_page.dart';
+import './pages/request_overview_page.dart';
 import './pages/splash_page.dart';
 
 void main() {
@@ -47,9 +51,20 @@ class MyApp extends StatelessWidget {
                   Provider.of<Auth>(context, listen: false).token, {}),
               update: (context, auth, pre) =>
                   LogisticsProvider(auth.token, pre!.stats)),
-          ChangeNotifierProvider(
-            create: (context) => Wallet(),
-          ),
+
+          ChangeNotifierProxyProvider<Auth, Walletprovider>(
+              create: (context) => Walletprovider(
+                  Provider.of<Auth>(context, listen: false).token, {}),
+              update: (context, auth, pre) =>
+                  Walletprovider(auth.token, pre!.items)),
+          ChangeNotifierProxyProvider<Auth, RequestListProvider>(
+              create: (context) => RequestListProvider(
+                  Provider.of<Auth>(context, listen: false).token, []),
+              update: (context, auth, pre) =>
+                  RequestListProvider(auth.token, pre!.items)),
+          // ChangeNotifierProvider(
+          //   create: (context) => Wallet(),
+          // ),
           ChangeNotifierProvider(create: (context) => PlaceSearchProvider()),
         ],
         child: Consumer<Auth>(
@@ -98,6 +113,8 @@ class MyApp extends StatelessWidget {
               Login.routeName: (context) => Login(),
               Logisics.routeName: (context) => Logisics(),
               RegisterUser.routeName: (context) => RegisterUser(),
+              RequestListPage.routName: (context) => RequestListPage(),
+              RequestOverviewPage.routeName: (context) => RequestOverviewPage()
             },
           ),
         ));

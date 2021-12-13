@@ -64,7 +64,7 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
             Container(
