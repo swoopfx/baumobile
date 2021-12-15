@@ -4,33 +4,31 @@ import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'config.dart';
-import '../model/logistic_model.dart';
 
-class LogisticsProvider with ChangeNotifier {
+class FlutterwavePaymentProvider with ChangeNotifier {
   var _isLoaded = false;
 
   String _authToken = "";
-  List<Map> _items = [];
+  Map items = {};
 
-  Map<String, dynamic> stats = {};
+  // Map<String, dynamic> stats = {};
 
-  // <Map> get items {
-  //   return [..._items];
-  // }
+  FlutterwavePaymentProvider(this._authToken, this.items);
 
-  LogisticsProvider(this._authToken, this.stats);
-
-  Future<Map> fetchStats(Map value) async {
+  Future verifypayment(String txRef, String amountPayed) async {
     try {
-      var uuu =
-          Uri.parse(Config.baseUrl + "logistics/logistics/calculate-stats");
+      var uuu = Uri.parse(Config.baseUrl + "wallet/api/verifypayment");
       final response = await http.post(uuu,
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'Authorization': 'Bearer $_authToken',
           },
-          body: json.encode(value));
+          body: json.encode({
+            "status": "success",
+            "txRef": txRef,
+            "amountPayed": amountPayed
+          }));
 
       var decodedResponse = json.decode(response.body);
       if (response.statusCode != 200) {
@@ -42,27 +40,25 @@ class LogisticsProvider with ChangeNotifier {
       if (decodedResponse["message"] != null) {
         throw HttpException(decodedResponse["error"]);
       }
-      stats = decodedResponse['data'];
+
       notifyListeners();
-      return decodedResponse['data'];
+      return decodedResponse;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> deleteLogistics(String id) async {
+  Future<Map> paymentConfig() async {
     try {
-      var url =
-          Uri.parse(Config.baseUrl + "logistics/logistics/calculate-stats");
-      final response = await http.post(url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $_authToken',
-          },
-          body: json.encode({"id": id}));
+      var uuu = Uri.parse(Config.baseUrl + "wallet/api/prefund-wallet");
+      final response = await http.get(uuu, headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $_authToken',
+      });
+
       var decodedResponse = json.decode(response.body);
-      if (response.statusCode != 202) {
+      if (response.statusCode != 200) {
         throw json.decode(response.body);
       }
       if (decodedResponse["error"] != null) {
@@ -71,8 +67,9 @@ class LogisticsProvider with ChangeNotifier {
       if (decodedResponse["message"] != null) {
         throw HttpException(decodedResponse["error"]);
       }
-      stats = decodedResponse['data'];
+
       notifyListeners();
+      return decodedResponse;
     } catch (e) {
       rethrow;
     }

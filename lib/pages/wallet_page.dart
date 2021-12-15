@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../provider/wallet_provider.dart';
 import 'package:provider/provider.dart';
 import '../pages/partials/app_drawer.dart';
+import './partials/wallet_bottom_modal_form.dart';
 
 class Wallet extends StatefulWidget {
   static const routeName = "/wallet";
@@ -33,6 +34,18 @@ class _WalletState extends State<Wallet> {
   String formatedCurrency(context, String value) {
     final format = new NumberFormat("#,##0.00", "en_US");
     return getCurrency(context) + format.format(double.parse(value));
+  }
+
+  void bottommodal() {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return GestureDetector(
+          child: WalletBottomModalForm(),
+          onTap: () {},
+        );
+      },
+    );
   }
 
   void fetchBalance() async {
@@ -151,7 +164,9 @@ class _WalletState extends State<Wallet> {
                                             //   vertical: 20,
                                             // ),
                                           ),
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            bottommodal();
+                                          },
                                           child: Text("Fund Wallet")),
                                     ])
                               ],

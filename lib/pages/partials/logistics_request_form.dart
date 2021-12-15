@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../provider/place_search_provider.dart';
 import '../../services/place_service.dart';
 import '../../provider/logistics_provider.dart';
+import 'package:flutterwave/flutterwave.dart';
 
 class LogisticsRequestForm extends StatefulWidget {
   String serviceId = "";
@@ -113,6 +114,7 @@ class _LogisticsRequestFormState extends State<LogisticsRequestForm> {
                   FlatButton(
                       onPressed: () {
                         Navigator.of(context).pop();
+
                         _isRequesting = false;
                       },
                       child: const Text("OK"))

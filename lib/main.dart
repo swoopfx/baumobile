@@ -19,6 +19,7 @@ import './provider/request_list_provider.dart';
 import './pages/request_list_page.dart';
 import './pages/request_overview_page.dart';
 import './pages/splash_page.dart';
+import "./provider/flutterwave_payment_provider.dart";
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +63,12 @@ class MyApp extends StatelessWidget {
                   Provider.of<Auth>(context, listen: false).token, []),
               update: (context, auth, pre) =>
                   RequestListProvider(auth.token, pre!.items)),
+
+          ChangeNotifierProxyProvider<Auth, FlutterwavePaymentProvider>(
+              create: (context) => FlutterwavePaymentProvider(
+                  Provider.of<Auth>(context, listen: false).token, {}),
+              update: (context, auth, pre) =>
+                  FlutterwavePaymentProvider(auth.token, pre!.items)),
           // ChangeNotifierProvider(
           //   create: (context) => Wallet(),
           // ),
@@ -99,7 +106,7 @@ class MyApp extends StatelessWidget {
                     shape: null),
                 backgroundColor: Theme.of(context).primaryColorLight),
             home: auth.isAuth
-                ? ServicePage()
+                ? Dashboard()
                 : FutureBuilder(
                     future: auth.autoLogin(),
                     builder: (context, snapshot) =>
@@ -114,7 +121,8 @@ class MyApp extends StatelessWidget {
               Logisics.routeName: (context) => Logisics(),
               RegisterUser.routeName: (context) => RegisterUser(),
               RequestListPage.routName: (context) => RequestListPage(),
-              RequestOverviewPage.routeName: (context) => RequestOverviewPage()
+              RequestOverviewPage.routeName: (context) => RequestOverviewPage(),
+              Dashboard.routeName: (context) => Dashboard()
             },
           ),
         ));
