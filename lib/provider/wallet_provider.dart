@@ -85,9 +85,9 @@ class Walletprovider with ChangeNotifier {
     return decodedResponse;
   }
 
-  Future fundwallet(Map data) async {
+  Future<Map> fundwallet(Map data) async {
     try {
-      var url = Uri.parse(Config.baseUrl + "wallet/api/prefund-wallet");
+      var url = Uri.parse(Config.baseUrl + "wallet/api/fund-wallet");
       final response = await http.post(url,
           headers: {
             'Content-Type': 'application/json',
@@ -95,8 +95,9 @@ class Walletprovider with ChangeNotifier {
             'Authorization': 'Bearer $_authToken',
           },
           body: json.encode(data));
+      // print(response.body);
       var decodedResponse = json.decode(response.body);
-      if (response.statusCode != 200) {
+      if (response.statusCode != 201) {
         throw json.decode(response.body);
       }
       if (decodedResponse["error"] != null) {

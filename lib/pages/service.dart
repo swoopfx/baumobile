@@ -45,14 +45,14 @@ class _ServicePageState extends State<ServicePage> {
   // }
 
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() async {
     super.didChangeDependencies();
     if (_isInit) {
       setState(() {
         _isLoading = true;
       });
-      _providerObject = Provider.of<ServiceTypes>(context);
-      _providerObject.fetchService();
+      _providerObject = Provider.of<ServiceTypes>(context, listen: false);
+      await _providerObject.fetchService();
       // _providerObject.fetchService();
     }
     _isInit = false;

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:flutterwave/flutterwave.dart';
+// import 'package:flutterwave/flutterwave.dart';
 import '../../provider/flutterwave_payment_provider.dart';
+import 'package:flutter_paystack/flutter_paystack.dart';
+import '../../provider/logistics_provider.dart';
+import '../../pages/request_overview_page.dart';
 
 class LogisticsOverView extends StatefulWidget {
   Map logisticsDetails = {};
@@ -16,83 +19,80 @@ class LogisticsOverView extends StatefulWidget {
 
 class _LogisticsOverViewState extends State<LogisticsOverView> {
   bool isLoaded = false;
+  final formKey = GlobalKey<FormState>();
+  final _paymentTypeController = TextEditingController();
+  String _selectedPaymentMethod = "";
 
-  Map paymentConfig = {
-    "channel": "Flutterwave",
-    "public_key": "FLWPUBK_TEST-de78bdcbfddc309da479426460ffe81c-X",
-    "secret_key": "FLWSECK_TEST-874b3c83e0f048c71ceade34c7af0f58-X",
-    "encrption_key": "FLWSECK_TEST7bd22c1713a1",
-    "bau_tx_ref": "inv61b84e78aff53",
-    "customer": {
-      "uid": "19879689605fbfcbd850e9a",
-      "full_name": "Ezekiel Ajayjuy",
-      "email": "ezekiel_a@yahoo.com",
-      "phoneNumber": "08092907113"
-    }
-  };
+  var paymentConfig = {};
+
+  bool _isProcessingPayment = false;
+
+  final plugin = PaystackPlugin();
+
+  final paymentMethod = [
+    "Wallet",
+    "Card",
+  ];
 
   _onSubmitLogisticsRequest() async {
     // try {
-    String fullname = paymentConfig['customer']['full_name'];
-    String invoiceNumber = paymentConfig["bau_tx_ref"];
-    print(paymentConfig["bau_tx_ref"]);
-    final flutterwave = Flutterwave.forUIPayment(
-        amount: widget.logisticsDetails["price"].toString(),
-        currency: FlutterwaveCurrency.NGN,
-        context: context,
-        publicKey: paymentConfig["public_key"],
-        encryptionKey: paymentConfig["encrption_key"],
-        email: paymentConfig["customer"]["email"],
-        fullName: paymentConfig["customer"]["full_name"],
-        txRef: invoiceNumber,
-        narration:
-            "Payment by $fullname for  for invoice number $invoiceNumber ",
-        isDebugMode: true,
-        phoneNumber: paymentConfig["customer"]["phoneNumber"],
-        acceptCardPayment: true,
-        acceptUSSDPayment: false,
-        acceptAccountPayment: false,
-        acceptFrancophoneMobileMoney: false,
-        acceptGhanaPayment: false,
-        acceptMpesaPayment: false,
-        acceptRwandaMoneyPayment: true,
-        acceptUgandaPayment: false,
-        acceptZambiaPayment: false);
+    if (formKey.currentState!.validate()) {
+      var paymentProvider =
+          Provider.of<FlutterwavePaymentProvider>(context, listen: false);
+      var paymentConfig = await paymentProvider.paymentConfig();
 
-    final response = await flutterwave.initializeForUiPayments();
-    // final response = await flutterwave.initializeForUiPayments();
-    if (response != null) {
-      print(response.data);
-      showLoading(response.data!.status.toString()).then((value) => null);
-    } else {
-      showLoading("No Response!");
+      String fullname = paymentConfig['customer']['full_name'];
+      String invoiceNumber = paymentConfig["bau_tx_ref"];
+
+      // Charge charge = Charge()
+      String enteredAmount = widget.logisticsDetails["price"].toString();
+      //  int.parse(enteredAmount.padRight(enteredAmount.length + 2, '0'));
+      if (_selectedPaymentMethod == "Card") {
+        Charge charge = Charge();
+        charge.amount =
+            int.parse(enteredAmount.padRight(enteredAmount.length + 2, '0'));
+        // int.parse(enteredAmount);
+        // int.parse(enteredAmount.padRight(enteredAmount.length + 2, '0'));
+        charge.reference = invoiceNumber;
+        charge.email = paymentConfig["customer"]["email"];
+
+        setState(() {
+          isLoaded = true;
+        });
+
+        CheckoutResponse response = await plugin.checkout(
+          context,
+          method: CheckoutMethod.card, // Defaults to CheckoutMethod.selectable
+          charge: charge,
+        );
+
+        if (response.message == "Success" && response.reference != null) {
+          Map verification = await paymentProvider
+              .verifypaymentPaystack(response.reference.toString());
+          if (verification['status'] == true) {
+            Map data = widget.logisticsDetails;
+            data["amountPayed"] = verification["data"]["amount"];
+            data["status"] = "success";
+            data["txRef"] = verification["data"]["reference"];
+            data["payment_mode"] = _selectedPaymentMethod == "Card" ? 20 : 10;
+            var logisticsProvider =
+                Provider.of<LogisticsProvider>(context, listen: false);
+            Map<String, dynamic> res =
+                await logisticsProvider.createDispatch(data);
+            setState(() {
+              isLoaded = false;
+            });
+            print(res["uid"]);
+            print(res["item_name"]);
+            Navigator.of(context).pushReplacementNamed(
+                RequestOverviewPage.routeName,
+                arguments: {"uid": res["uid"], "itemName": res["item_name"]});
+          }
+        }
+      } else {
+        // charge wallet
+      }
     }
-    // } catch (e) {
-    //   return showDialog<Null>(
-    //       context: context,
-    //       builder: (_) => AlertDialog(
-    //             title: Text("Error Occured"),
-    //             content: Text(e.toString()),
-    //             actions: [
-    //               FlatButton(
-    //                   onPressed: () {
-    //                     Navigator.of(context).pop();
-    //                     // _isLoading = false;
-    //                   },
-    //                   child: Text("OK"))
-    //             ],
-    //           ));
-    // }
-  }
-
-  _hydrateRequest() async {
-    // charge card
-    // final response = await Provider.of<FlutterwavePaymentProvider>(context)
-    //     .verifypayment(txRef, amountPayed);
-    // verify payment;
-    //if successfull payment post
-    // send logistics post
-    // redirect and replace to logistics overview page
   }
 
   Future<void> showLoading(String message) {
@@ -135,56 +135,168 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
     if (isLoaded) {
       return const Center(child: CircularProgressIndicator());
     } else {
-      return Container(
-        color: Color(0xffB8DCF0),
-        padding: EdgeInsets.only(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 10),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                RichText(
-                  text: TextSpan(
+      return Form(
+        key: formKey,
+        child: Container(
+          color: Color(0xffB8DCF0),
+          padding: EdgeInsets.symmetric(
+              // vertical: MediaQuery.of(context).viewInsets.bottom + 10,
+              vertical: 30,
+              horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                child: const Text(
+                  "Dispatch Overview",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              const Divider(),
+              Container(
+                padding: EdgeInsets.all(3),
+                margin: EdgeInsets.all(3),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      WidgetSpan(
-                        child: Icon(Icons.credit_card, size: 14),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const WidgetSpan(
+                              child: Icon(Icons.credit_card, size: 25),
+                            ),
+                            WidgetSpan(
+                                child: SizedBox(
+                              width: 2,
+                            )),
+                            TextSpan(
+                                text: formatedCurrency(
+                                    context,
+                                    widget.logisticsDetails["price"]
+                                        .toString()),
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                       ),
-                      TextSpan(
-                        text: formatedCurrency(context,
-                            widget.logisticsDetails["price"].toString()),
-                      ),
+                      const VerticalDivider(),
+                      Container(
+                          margin: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: TextFormField(
+                            controller: _paymentTypeController,
+                            textInputAction: TextInputAction.next,
+                            style: const TextStyle(color: Colors.black),
+                            readOnly: true,
+                            onTap: _openBottomSheet,
+                            decoration: const InputDecoration(
+                              hintText: "Select Payment",
+                            ),
+                            validator: (value) => value!.isNotEmpty
+                                ? null
+                                : "Payment Type is required",
+                          ),
+                          width: MediaQuery.of(context).size.width * 0.3),
                     ],
                   ),
                 ),
-              ],
-            ),
-            Container(
-              child: Text(widget.logisticsDetails["distance"].toString()),
-            ),
-            ElevatedButton(
-                onPressed: () => _onSubmitLogisticsRequest(),
-                child: Text("PRE")),
-            FloatingActionButton(
-              onPressed: () => null,
-              child: Text("PP"),
-            ),
-          ],
+              ),
+              const Divider(
+                thickness: 2,
+              ),
+              Container(
+                margin: const EdgeInsets.all(13),
+                child: Text(
+                  widget.logisticsDetails["distance"].toString(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15.0,
+                  ),
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                height: 50,
+                margin: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+                child: RaisedButton(
+                  onPressed: () => _onSubmitLogisticsRequest(),
+                  color: Colors.blue,
+                  child: Text(
+                    "Pay With $_selectedPaymentMethod",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
+  }
+
+  void _openBottomSheet() {
+    showModalBottomSheet(
+        context: this.context,
+        builder: (context) {
+          return this._getCurrency();
+        });
+  }
+
+  Widget _getCurrency() {
+    return Container(
+      height: 250,
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+      color: Colors.white,
+      child: ListView(
+        children: paymentMethod
+            .map((currency) => ListTile(
+                  onTap: () => {this._handleCurrencyTap(currency)},
+                  title: Column(
+                    children: [
+                      Text(
+                        currency,
+                        textAlign: TextAlign.start,
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      SizedBox(height: 4),
+                      Divider(height: 1)
+                    ],
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  _handleCurrencyTap(String currency) {
+    this.setState(() {
+      _selectedPaymentMethod = currency;
+      _paymentTypeController.text = currency;
+    });
+    Navigator.pop(this.context);
   }
 
   @override
   void didChangeDependencies() async {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-    // paymentConfig =
-    //     await Provider.of<FlutterwavePaymentProvider>(context, listen: false)
-    //         .paymentConfig();
-    // print(paymentConfig);
+    paymentConfig =
+        await Provider.of<FlutterwavePaymentProvider>(context, listen: false)
+            .paymentConfigPaystack();
+
+    plugin.initialize(publicKey: paymentConfig["public_key"]);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
