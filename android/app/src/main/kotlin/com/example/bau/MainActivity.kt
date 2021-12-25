@@ -1,4 +1,4 @@
-package com.example.bau
+package com.bau.dispatch
 
 import io.flutter.embedding.android.FlutterActivity
 

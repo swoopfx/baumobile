@@ -113,7 +113,7 @@ class Dashboard extends StatelessWidget {
                               top: 19,
                               left: 61,
                               child: Text(
-                                'What do you want to order?',
+                                ' ',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                     color: Color.fromRGBO(218, 99, 23, 1),
@@ -205,45 +205,41 @@ class Dashboard extends StatelessWidget {
                                   height: 32,
                                   child: Stack(children: <Widget>[
                                     Positioned(
-                                        top: 0,
-                                        left: 0,
-                                        child: Container(
-                                            width: 82,
-                                            height: 32,
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(6),
-                                                topRight: Radius.circular(6),
-                                                bottomLeft: Radius.circular(6),
-                                                bottomRight: Radius.circular(6),
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Color.fromRGBO(0, 0,
-                                                        0, 0.12999999523162842),
-                                                    offset: Offset(6, 4),
-                                                    blurRadius: 20)
-                                              ],
-                                              color: Color.fromRGBO(
-                                                  255, 255, 255, 1),
-                                            ))),
-                                    Positioned(
-                                        top: 11,
-                                        left: 19,
+                                        // top: 11,
+                                        // left: 19,
                                         child: TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pushNamed(
-                                                RequestListPage.routName);
-                                          },
-                                          child: const Text("Acive request"),
-                                          style: const ButtonStyle(),
-                                        )),
+                                            onPressed: () {
+                                              Navigator.of(context).pushNamed(
+                                                  RequestListPage.routName);
+                                            },
+                                            child: const Text(
+                                              "Acive request",
+                                              style: TextStyle(
+                                                  color: Colors.black),
+                                            ),
+                                            style: ButtonStyle(
+                                                side: MaterialStateProperty.all(
+                                                    BorderSide(
+                                                        width: 2,
+                                                        color: Colors.red)),
+                                                foregroundColor:
+                                                    MaterialStateProperty.all(
+                                                        Colors.purple),
+                                                padding:
+                                                    MaterialStateProperty.all(
+                                                        EdgeInsets.symmetric(
+                                                            vertical: 10,
+                                                            horizontal: 50)),
+                                                textStyle:
+                                                    MaterialStateProperty.all(
+                                                        TextStyle(
+                                                            fontSize: 30))))),
                                   ]))),
                           Positioned(
                               top: 30,
                               left: 173,
                               child: Text(
-                                'Special Deal For October',
+                                ' ',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                     color: Color.fromRGBO(255, 255, 255, 1),

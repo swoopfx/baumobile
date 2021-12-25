@@ -78,15 +78,6 @@ class MyApp extends StatelessWidget {
           builder: (context, auth, _) => MaterialApp(
             title: 'Bau Dispatch',
             theme: ThemeData(
-                // This is the theme of your application.
-                //
-                // Try running your application with "flutter run". You'll see the
-                // application has a blue toolbar. Then, without quitting the app, try
-                // changing the primarySwatch below to Colors.green and then invoke
-                // "hot reload" (press "r" in the console where you ran "flutter run",
-                // or simply save your changes to "hot reload" in a Flutter IDE).
-                // Notice that the counter didn't reset back to zero; the application
-                // is not restarted.
                 primarySwatch: Colors.green,
                 scaffoldBackgroundColor: Colors.white,
                 canvasColor: Color.fromARGB(224, 225, 222, 1),
@@ -115,9 +106,9 @@ class MyApp extends StatelessWidget {
                             : Login(),
                   ),
             routes: {
+              Login.routeName: (context) => Login(),
               ServicePage.routeName: (context) => ServicePage(),
               Wallet.routeName: (context) => Wallet(),
-              Login.routeName: (context) => Login(),
               Logisics.routeName: (context) => Logisics(),
               RegisterUser.routeName: (context) => RegisterUser(),
               RequestListPage.routName: (context) => RequestListPage(),

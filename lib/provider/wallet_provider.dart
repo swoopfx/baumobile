@@ -113,9 +113,9 @@ class Walletprovider with ChangeNotifier {
     }
   }
 
-  Future chargeWallet(String amount) async {
+  Future<Map> chargeWallet(double amount) async {
     try {
-      var url = Uri.parse(Config.baseUrl + "wallet/api/prefund-wallet");
+      var url = Uri.parse(Config.baseUrl + "wallet/api/charge-wallet");
       final response = await http.post(url,
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ class Walletprovider with ChangeNotifier {
           },
           body: json.encode({"amount": amount}));
       var decodedResponse = json.decode(response.body);
-      if (response.statusCode != 200) {
+      if (response.statusCode != 201) {
         throw json.decode(response.body);
       }
       if (decodedResponse["error"] != null) {

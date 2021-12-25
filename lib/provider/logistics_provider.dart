@@ -50,7 +50,7 @@ class LogisticsProvider with ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>> createDispatch(Map data) async {
+  Future<Map<dynamic, dynamic>> createDispatch(Map data) async {
     try {
       var uuu =
           Uri.parse(Config.baseUrl + "logistics/logistics/create-request");
@@ -72,40 +72,40 @@ class LogisticsProvider with ChangeNotifier {
       if (decodedResponse["message"] != null) {
         throw HttpException(decodedResponse["error"]);
       }
-      // stats = decodedResponse['data'];
+
       notifyListeners();
-      print(decodedResponse);
+
       return decodedResponse['data'];
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> deleteLogistics(String id) async {
-    try {
-      var url =
-          Uri.parse(Config.baseUrl + "logistics/logistics/calculate-stats");
-      final response = await http.post(url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $_authToken',
-          },
-          body: json.encode({"id": id}));
-      var decodedResponse = json.decode(response.body);
-      if (response.statusCode != 202) {
-        throw json.decode(response.body);
+  Future<void> deleteLogistics(String id) {
+    var url = Uri.parse(Config.baseUrl + "logistics/logistics/deleterequest");
+    return http
+        .post(url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $_authToken',
+            },
+            body: json.encode({"id": id}))
+        .then((value) {
+      if (value.statusCode != 202) {
+        throw json.decode(value.body);
       }
-      if (decodedResponse["error"] != null) {
-        throw HttpException(decodedResponse["error"]);
-      }
-      if (decodedResponse["message"] != null) {
-        throw HttpException(decodedResponse["error"]);
-      }
-      stats = decodedResponse['data'];
       notifyListeners();
-    } catch (e) {
-      rethrow;
-    }
+    });
+
+    // var decodedResponse = json.decode(response.body);
+
+    // if (decodedResponse["error"] != null) {
+    //   throw HttpException(decodedResponse["error"]);
+    // }
+    // if (decodedResponse["message"] != null) {
+    //   throw HttpException(decodedResponse["error"]);
+    // }
+    // stats = decodedResponse['data'];
   }
 }

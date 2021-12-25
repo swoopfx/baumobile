@@ -1,8 +1,11 @@
+import 'package:bau/provider/logistics_provider.dart';
+import 'package:bau/provider/wallet_provider.dart';
 import 'package:flutter/material.dart';
 import './partials/app_drawer.dart';
 import 'package:provider/provider.dart';
 import '../provider/request_list_provider.dart';
 import 'package:intl/intl.dart';
+import '../pages/service.dart';
 
 class RequestOverviewPage extends StatefulWidget {
   static const routeName = "request_overview_page";
@@ -41,7 +44,7 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
     try {
       var _item = await Provider.of<RequestListProvider>(context, listen: false)
           .fetchRideInfo(uid);
-      print(_item["calculatedDistanceText"]);
+      // print(_item["calculatedDistanceText"]);
       setState(() {
         item = _item;
       });
@@ -85,11 +88,82 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
     }
   }
 
+  // _showAlertDialog() {
+  //   // set up the buttons
+
+  //   Widget cancelButton = FlatButton(
+  //     child: Text("Cancel"),
+  //     onPressed: () {},
+  //   );
+  //   Widget continueButton = FlatButton(
+  //     child: Text("Continue"),
+  //     onPressed: () {},
+  //   );
+  //   // set up the AlertDialog
+  //   AlertDialog alert = AlertDialog(
+  //     title: Text("Caution"),
+  //     content: Text(""),
+  //     actions: [
+  //       cancelButton,
+  //       continueButton,
+  //     ],
+  //   );
+  //   // show the dialog
+  //   return showDialog<Null>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return alert;
+  //     },
+  //   );
+  // }
+
   Widget _getFAB() {
     if (item.isNotEmpty) {
       if (item["status"]["id"] == 10) {
         return FloatingActionButton(
-            onPressed: () => null, child: Icon(Icons.delete));
+          onPressed: () => showDialog<Null>(
+              context: context,
+              builder: (_) => AlertDialog(
+                    title: Text("Caution"),
+                    content:
+                        Text("Are you sure you want to cancel this request  "),
+                    actions: [
+                      FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _isLoading = false;
+                          },
+                          child: Text("Cancel")),
+                      FlatButton(
+                          onPressed: () {
+                            print("Before");
+                            var logisticsProvider =
+                                Provider.of<LogisticsProvider>(context,
+                                    listen: false);
+
+                            logisticsProvider
+                                .deleteLogistics(item['id'])
+                                .then((value) {
+                              print("After");
+                              var walletProvider = Provider.of<Walletprovider>(
+                                  context,
+                                  listen: false);
+                              Map data = {
+                                "status": "success",
+                                "txRef": DateTime.now().toIso8601String(),
+                                "amountPayed": item["logisticsTransaction"]
+                                    ["amount"]
+                              };
+                              walletProvider.fundwallet(data);
+                              Navigator.of(context)
+                                  .pushReplacementNamed(ServicePage.routeName);
+                            });
+                          },
+                          child: Text("Continue")),
+                    ],
+                  )),
+          child: Icon(Icons.delete),
+        );
       } else {
         return Container();
       }

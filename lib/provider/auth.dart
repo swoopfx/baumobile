@@ -10,18 +10,21 @@ class Auth with ChangeNotifier {
   String _token = "";
   DateTime _expiryDate = DateTime(2021);
 
+  bool isrefeshing = false;
   String _userId = "";
 
   String _preferenceKey = "thisuser";
 
   bool get isAuth {
-    return token != "";
+    if (token == "") {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   String get token {
-    if (
-        // _expiryDate.isAfter(DateTime.now()) &&
-        _token != "") {
+    if (_token != "") {
       return _token;
     }
     return "";
@@ -76,7 +79,8 @@ class Auth with ChangeNotifier {
     }
   }
 
-  void refreshToken(String userid) async {
+  Future<void> refreshToken(String userid) async {
+    isrefeshing = true;
     try {
       var uri = createUrl("jwt/api/refreshtoken");
       final response = await http.post(uri, body: json.encode({"uid": userid}));
@@ -91,6 +95,8 @@ class Auth with ChangeNotifier {
       }
       _token = decodedResponse["token"];
       _userId = decodedResponse["userid"];
+
+      isrefeshing = false;
       notifyListeners();
     } catch (e) {
       rethrow;
@@ -109,14 +115,14 @@ class Auth with ChangeNotifier {
   Future<bool> autoLogin() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(_preferenceKey)) {
+      // notifyListeners();
       return false;
-    } else {
-      final userData = prefs.getString(_preferenceKey);
-      // call referesh token
-      refreshToken(userData.toString());
-
-      return true;
     }
+    final userData = prefs.getString(_preferenceKey);
+    // call referesh token
+    await refreshToken(userData.toString());
+    // notifyListeners();
+    return true;
   }
 
   Uri createUrl(String routeString) {

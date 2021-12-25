@@ -45,24 +45,27 @@ class _ServicePageState extends State<ServicePage> {
   // }
 
   @override
-  void didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
     if (_isInit) {
       setState(() {
         _isLoading = true;
       });
-      _providerObject = Provider.of<ServiceTypes>(context, listen: false);
-      await _providerObject.fetchService();
-      // _providerObject.fetchService();
+
+      Provider.of<ServiceTypes>(context, listen: false)
+          .fetchService()
+          .then((value) {
+        _serviceTypeData =
+            Provider.of<ServiceTypes>(context, listen: false).items;
+        _isInit = false;
+        setState(() {
+          _isLoading = false;
+        });
+      });
     }
-    _isInit = false;
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   Widget _serviceContainerWidget(serviceType) {
-    _serviceTypeData = _providerObject.items;
     // print(serviceType);
     return SingleChildScrollView(
         child: Column(

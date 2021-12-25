@@ -6,6 +6,8 @@ import '../../provider/flutterwave_payment_provider.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
 import '../../provider/logistics_provider.dart';
 import '../../pages/request_overview_page.dart';
+import '../../provider/wallet_provider.dart';
+import '../../pages/service.dart';
 
 class LogisticsOverView extends StatefulWidget {
   Map logisticsDetails = {};
@@ -37,6 +39,9 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
   _onSubmitLogisticsRequest() async {
     // try {
     if (formKey.currentState!.validate()) {
+      setState(() {
+        _isProcessingPayment = true;
+      });
       var paymentProvider =
           Provider.of<FlutterwavePaymentProvider>(context, listen: false);
       var paymentConfig = await paymentProvider.paymentConfig();
@@ -77,22 +82,64 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
             data["payment_mode"] = _selectedPaymentMethod == "Card" ? 20 : 10;
             var logisticsProvider =
                 Provider.of<LogisticsProvider>(context, listen: false);
-            Map<String, dynamic> res =
-                await logisticsProvider.createDispatch(data);
-            setState(() {
-              isLoaded = false;
-            });
-            print(res["uid"]);
-            print(res["item_name"]);
+            Map res = await logisticsProvider.createDispatch(data);
+            // setState(() {
+            //   isLoaded = false;
+            // });
+
             Navigator.of(context).pushReplacementNamed(
                 RequestOverviewPage.routeName,
-                arguments: {"uid": res["uid"], "itemName": res["item_name"]});
+                arguments: {
+                  "uid": res["uid"].toString(),
+                  "itemName": res["item_name"].toString()
+                });
           }
         }
       } else {
         // charge wallet
+        // get Wallet Balance
+        var walletProvider =
+            Provider.of<Walletprovider>(context, listen: false);
+        var balance = await walletProvider.fetchBalance();
+
+        if (double.parse(widget.logisticsDetails["price"].toString()) >
+            double.parse(balance['balance'].toString())) {
+          showLoading("Insufficient Funds");
+        } else {
+          Map res = await walletProvider.chargeWallet(
+              double.parse(widget.logisticsDetails["price"].toString()));
+          if (res['status'] == "success") {
+            //create request
+            Map data = widget.logisticsDetails;
+            var logisticsProvider =
+                Provider.of<LogisticsProvider>(context, listen: false);
+            data["amountPayed"] = res['paid'];
+            data["status"] = "success";
+            data["txRef"] = res["txRef"];
+            data["payment_mode"] = _selectedPaymentMethod == "Card" ? 20 : 10;
+            Map<dynamic, dynamic> dis =
+                await logisticsProvider.createDispatch(data);
+
+            print(dis);
+
+            // Map<String, String> route = {
+            //   "uid": dis["uid"].toString(),
+            //   "itemName": dis["item_name"].toString()
+            // };
+
+            Navigator.of(context).pushReplacementNamed(
+                RequestOverviewPage.routeName,
+                arguments: {
+                  "uid": dis["uid"].toString(),
+                  "itemName": dis["item_name"].toString()
+                });
+          }
+        }
       }
     }
+    setState(() {
+      _isProcessingPayment = false;
+    });
   }
 
   Future<void> showLoading(String message) {
@@ -101,6 +148,13 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          actions: [
+            FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"))
+          ],
           content: Container(
             margin: EdgeInsets.fromLTRB(30, 20, 30, 20),
             width: double.infinity,
@@ -227,10 +281,14 @@ class _LogisticsOverViewState extends State<LogisticsOverView> {
                 child: RaisedButton(
                   onPressed: () => _onSubmitLogisticsRequest(),
                   color: Colors.blue,
-                  child: Text(
-                    "Pay With $_selectedPaymentMethod",
-                    style: const TextStyle(color: Colors.white),
-                  ),
+                  child: _isProcessingPayment
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : Text(
+                          "Pay With $_selectedPaymentMethod",
+                          style: const TextStyle(color: Colors.white),
+                        ),
                 ),
               ),
             ],
