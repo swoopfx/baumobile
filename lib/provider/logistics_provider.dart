@@ -108,4 +108,33 @@ class LogisticsProvider with ChangeNotifier {
     // }
     // stats = decodedResponse['data'];
   }
+
+  Future<List> dispatchActivity(String id) async {
+    try {
+      var uuu = Uri.parse(
+          Config.baseUrl + "logistics/logistics/activity-history/$id");
+      final response = await http.get(uuu, headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $_authToken',
+      });
+
+      var decodedResponse = json.decode(response.body);
+      if (response.statusCode != 200) {
+        throw json.decode(response.body);
+      }
+      if (decodedResponse["error"] != null) {
+        throw HttpException(decodedResponse["error"]);
+      }
+      if (decodedResponse["message"] != null) {
+        throw HttpException(decodedResponse["error"]);
+      }
+      // stats = decodedResponse['data'];
+      notifyListeners();
+      // print(decodedResponse);
+      return decodedResponse['data'] as List;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

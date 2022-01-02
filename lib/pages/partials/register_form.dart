@@ -1,5 +1,6 @@
 // import 'package:bau/pages/login.dart';
 import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
 import 'package:provider/provider.dart';
 import '../../provider/auth.dart';
 import '../../pages/login.dart';
@@ -43,6 +44,16 @@ class _RegisterFormState extends State<RegisterForm> {
           password: _authData["password"].toString(),
           email: _authData["email"].toString(),
           fullname: _authData["fullname"].toString());
+      Get.defaultDialog(
+          title: "Confirm Email",
+          middleText:
+              "A mail has been sent to the email provided, please confirm yor email and login",
+          textConfirm: "Go to Login",
+          barrierDismissible: false,
+          buttonColor: Colors.green,
+          onConfirm: () {
+            Get.off(Login());
+          });
     } catch (e) {
       print(e);
       return showDialog<Null>(

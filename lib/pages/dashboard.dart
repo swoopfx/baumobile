@@ -239,7 +239,7 @@ class Dashboard extends StatelessWidget {
                               top: 30,
                               left: 173,
                               child: Text(
-                                ' ',
+                                'Fund Wallet',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                     color: Color.fromRGBO(255, 255, 255, 1),

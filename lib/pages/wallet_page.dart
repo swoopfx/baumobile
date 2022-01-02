@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../provider/wallet_provider.dart';
@@ -172,18 +170,18 @@ class _WalletState extends State<Wallet> {
                               ],
                             ),
                           ),
-                          Container(
-                            alignment: Alignment.topRight,
-                            width: double.infinity,
-                            child: TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                "View History",
-                                style: TextStyle(),
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
-                          ),
+                          // Container(
+                          //   alignment: Alignment.topRight,
+                          //   width: double.infinity,
+                          //   child: TextButton(
+                          //     onPressed: () {},
+                          //     child: Text(
+                          //       "View History",
+                          //       style: TextStyle(),
+                          //       textAlign: TextAlign.right,
+                          //     ),
+                          //   ),
+                          // ),
                           Container(height: mediaquesy.size.height * 0.1),
                           Container(
                               // padding: 20,

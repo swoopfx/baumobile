@@ -1,11 +1,12 @@
-import 'package:bau/provider/logistics_provider.dart';
-import 'package:bau/provider/wallet_provider.dart';
 import 'package:flutter/material.dart';
 import './partials/app_drawer.dart';
 import 'package:provider/provider.dart';
 import '../provider/request_list_provider.dart';
 import 'package:intl/intl.dart';
 import '../pages/service.dart';
+import '../pages/request_list_page.dart';
+import '../provider/logistics_provider.dart';
+import '../provider/wallet_provider.dart';
 
 class RequestOverviewPage extends StatefulWidget {
   static const routeName = "request_overview_page";
@@ -17,6 +18,7 @@ class RequestOverviewPage extends StatefulWidget {
 }
 
 class _RequestOverviewPageState extends State<RequestOverviewPage> {
+  List dispatchActivity = [];
   String getCurrency(context) {
     // var format =
     //     NumberFormat.simpleCurrency(locale: Platform.localeName, name: 'NGN');
@@ -45,6 +47,10 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
       var _item = await Provider.of<RequestListProvider>(context, listen: false)
           .fetchRideInfo(uid);
       // print(_item["calculatedDistanceText"]);
+      dispatchActivity =
+          await Provider.of<LogisticsProvider>(context, listen: false)
+              .dispatchActivity(_item['id'].toString());
+
       setState(() {
         item = _item;
       });
@@ -124,27 +130,27 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
           onPressed: () => showDialog<Null>(
               context: context,
               builder: (_) => AlertDialog(
-                    title: Text("Caution"),
-                    content:
-                        Text("Are you sure you want to cancel this request  "),
+                    title: const Text("Caution"),
+                    content: const Text(
+                        "The cost of this Service would be transfered into your wallet, Are you sure you want to cancel this request  "),
                     actions: [
                       FlatButton(
                           onPressed: () {
                             Navigator.of(context).pop();
                             _isLoading = false;
                           },
-                          child: Text("Cancel")),
+                          child: const Text("Cancel")),
                       FlatButton(
                           onPressed: () {
-                            print("Before");
+                            // print("Before");
                             var logisticsProvider =
                                 Provider.of<LogisticsProvider>(context,
                                     listen: false);
 
                             logisticsProvider
-                                .deleteLogistics(item['id'])
+                                .deleteLogistics(item['id'].toString())
                                 .then((value) {
-                              print("After");
+                              // print("After");
                               var walletProvider = Provider.of<Walletprovider>(
                                   context,
                                   listen: false);
@@ -155,14 +161,14 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
                                     ["amount"]
                               };
                               walletProvider.fundwallet(data);
-                              Navigator.of(context)
-                                  .pushReplacementNamed(ServicePage.routeName);
+                              Navigator.of(context).pushReplacementNamed(
+                                  RequestListPage.routName);
                             });
                           },
-                          child: Text("Continue")),
+                          child: const Text("Continue")),
                     ],
                   )),
-          child: Icon(Icons.delete),
+          child: const Icon(Icons.delete),
         );
       } else {
         return Container();
@@ -195,7 +201,7 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
                               MaterialStateProperty.all<RoundedRectangleBorder>(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
-                              side: BorderSide(
+                              side: const BorderSide(
                                 color: Color.fromARGB(255, 70, 230, 214),
                                 width: 2.0,
                               ),
@@ -258,7 +264,10 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
                               ],
                             ),
                           ),
+                          Divider(),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               RichText(
                                 text: TextSpan(
@@ -271,28 +280,42 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
                                     ),
                                     TextSpan(
                                         text: item["calculatedDistanceText"],
-                                        style: TextStyle(color: Colors.black)),
+                                        style: const TextStyle(
+                                            color: Colors.black)),
                                   ],
                                 ),
                               ),
-                              if (item["logisticsTransaction"] != null)
-                                RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      WidgetSpan(
-                                        child: const Icon(Icons.location_on,
-                                            size: 14),
+                              // Text(item["logisticsTransaction"]["amount"]
+                              //     .toString()),
+                              // if (item["logisticsTransaction"] != null)
+                              Container(
+                                width: 20,
+                              ),
+                              const VerticalDivider(
+                                color: Colors.black,
+                                width: 1,
+                                thickness: 2,
+                              ),
+                              Container(
+                                width: 20,
+                              ),
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      style: const TextStyle(
+                                          color: Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 30),
+                                      text: formatedCurrency(
+                                        context,
+                                        item["logisticsTransaction"]["amount"]
+                                            .toString(),
                                       ),
-                                      TextSpan(
-                                        text: formatedCurrency(
-                                            context,
-                                            item["logisticsTransaction"]
-                                                    ["amount"]
-                                                .toString()),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
+                              ),
                             ],
                           ),
                           Container(
@@ -328,6 +351,27 @@ class _RequestOverviewPageState extends State<RequestOverviewPage> {
                             color: Color.fromARGB(255, 110, 189, 114),
                           ),
                           borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: ListView.builder(
+                          itemBuilder: (context, index) {
+                            return Card(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 2),
+                              child: Padding(
+                                padding: EdgeInsets.all(2),
+                                child: ListTile(
+                                  key: ValueKey(dispatchActivity[index]['id']),
+                                  leading: Icon(Icons.info_rounded),
+
+                                  title: Text(
+                                      dispatchActivity[index]['information']),
+                                  // subtitle: Text(serviceName),
+                                  // trailing: Icon(Icons.remove_red_eye),
+                                ),
+                              ),
+                            );
+                          },
+                          itemCount: dispatchActivity.length,
                         ),
                       ),
                     ],

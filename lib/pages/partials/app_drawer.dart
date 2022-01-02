@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:get/get.dart';
 import '../dashboard.dart';
 import 'package:provider/provider.dart';
 import '../../provider/auth.dart';
@@ -40,7 +41,7 @@ class AppDrawer extends StatelessWidget {
           Divider(),
           ListTile(
             leading: Icon(Icons.miscellaneous_services_rounded),
-            title: Text("Service"),
+            title: Text("Send A Parcel"),
             onTap: () {
               Navigator.of(context).pushReplacementNamed(ServicePage.routeName);
             },
@@ -58,12 +59,12 @@ class AppDrawer extends StatelessWidget {
             leading: Icon(Icons.logout),
             title: Text("Logout"),
             onTap: () {
-              // Navigator.of(context).pop();
+              Navigator.of(context).pop();
               // Na
 
-              Provider.of<Auth>(context, listen: false).logout();
-              // Navigator.of(context).pushReplacementNamed(Login.routeName);
-              // Navigator.of(context).pop();
+              Provider.of<Auth>(context, listen: false)
+                  .logout()
+                  .then((value) => Get.offAll(Login()));
             },
           ),
         ],

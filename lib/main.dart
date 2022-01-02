@@ -1,7 +1,8 @@
-import 'dart:developer';
+// import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import './pages/login.dart';
 import "./pages/service.dart";
@@ -75,7 +76,8 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (context) => PlaceSearchProvider()),
         ],
         child: Consumer<Auth>(
-          builder: (context, auth, _) => MaterialApp(
+          builder: (context, auth, _) => GetMaterialApp(
+            // MaterialApp(
             title: 'Bau Dispatch',
             theme: ThemeData(
                 primarySwatch: Colors.green,
